@@ -10,7 +10,7 @@ einops==0.8.0
 email_validator==2.2.0
 exceptiongroup==1.2.2
 faiss-cpu==1.8.0.post1
-fastapi==0.111.1
+fastapi
 fastapi-cli==0.0.4
 filelock==3.15.4
 fsspec==2024.6.1
@@ -21,7 +21,7 @@ hpack==3.0.0
 hstspreload==2024.7.1
 httpcore==0.9.1
 httptools==0.6.1
-httpx==0.13.3
+httpx
 huggingface-hub==0.24.1
 hyperframe==5.2.0
 idna==2.10
