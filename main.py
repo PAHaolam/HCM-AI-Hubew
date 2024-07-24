@@ -10,14 +10,14 @@ import faiss
 import json
 import torch
 from transformers import AutoModel
-
+from translate import translate_vietnamese_to_english  # Import the function
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 # Cung cấp tệp tĩnh từ thư mục "static"
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-IMAGE_FOLDER = "D:/ML DL AI/AIO/Competition/HCM_AI/images"
+IMAGE_FOLDER = "images"
 
 model_jina = AutoModel.from_pretrained(
     'jinaai/jina-clip-v1', trust_remote_code=True)
@@ -36,6 +36,7 @@ async def read_root(request: Request):
 
 @app.post("/display_images")
 async def display_images(query: str = Form(...), k: int = Form(...)):
+    query = translate_vietnamese_to_english(query)
     text_embedding = model_jina.encode_text(query).reshape((1, -1))
     _, indices = idx.search(text_embedding, k)
     retrieved_images = [
