@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FastAPI Image Display</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script>
+        async function handleSubmit(event) {
+            event.preventDefault(); // Ngăn chặn việc gửi form theo cách truyền thống
+            
+            // Lấy giá trị từ input text và range
+            const queryValue = document.getElementById('query').value;
+            const rangeValue = document.getElementById('k').value;
+
+            // Tạo một đối tượng FormData
+            const formData = new FormData();
+            formData.append('query', queryValue);
+            formData.append('k', rangeValue);
+
+            // Gửi dữ liệu bằng fetch API
+            const response = await fetch('/display_images', {
+                method: 'POST',
+                body: formData
+            });
+
+            // Xử lý phản hồi từ server
+            const result = await response.json();
+            document.getElementById('result').innerHTML = result.image_data;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h1>Text-Image retrieval</h1>
+            <form id="myForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="query">Query:</label>
+                    <textarea id="query" name="query" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="k" id="range_value">k = 1</label>
+                    <input type="range" id="k" name="k" min="1" max="50" value="1">
+                </div>
+                
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        <div class="right-panel">
+            <div id="result"></div>
+        </div>
+    </div>
+    <script>
+        // Cập nhật giá trị của range khi người dùng thay đổi
+        document.getElementById('k').addEventListener('input', function() {
+            document.getElementById('range_value').textContent = "k = "+this.value;
+        });
+    </script>
+</body>
+</html>
