@@ -22,8 +22,8 @@ IMAGE_FOLDER = "images"
 model_jina = AutoModel.from_pretrained(
     'jinaai/jina-clip-v1', trust_remote_code=True)
 
-idx = faiss.read_index("faiss_normal_jina.bin")
-id2imgfile = json.load(open('id2imgfile_jina.json'))
+idx = faiss.read_index("./dict/faiss_normal_jina.bin")
+id2imgfile = json.load(open('./dict/id2imgfile_jina.json'))
 for key in id2imgfile:
     # Tách giá trị của value để lấy phần cuối cùng sau dấu "/"
     id2imgfile[key] = '/'.join(id2imgfile[key].split('/')[-2:])
