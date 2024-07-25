@@ -1,0 +1,5 @@
+# Thư mục ảo hóa Python
+.venv/
+
+# Thư mục cache Python
+__pycache__/
