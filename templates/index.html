@@ -5,24 +5,22 @@
     <link rel="stylesheet" href="/static/styles.css">
     <script>
         async function handleSubmit(event) {
-            event.preventDefault(); // Ngăn chặn việc gửi form theo cách truyền thống
+            event.preventDefault();
             
-            // Lấy giá trị từ input text và range
             const queryValue = document.getElementById('query').value;
             const rangeValue = document.getElementById('k').value;
+            const modelNames = Array.from(document.querySelectorAll('input[name="model_name"]:checked')).map(el => el.value);
 
-            // Tạo một đối tượng FormData
             const formData = new FormData();
             formData.append('query', queryValue);
             formData.append('k', rangeValue);
+            modelNames.forEach(name => formData.append('model_names', name));
 
-            // Gửi dữ liệu bằng fetch API
             const response = await fetch('/display_images', {
                 method: 'POST',
                 body: formData
             });
 
-            // Xử lý phản hồi từ server
             const result = await response.json();
             document.getElementById('result').innerHTML = result.image_data;
         }
@@ -31,18 +29,27 @@
 <body>
     <div class="container">
         <div class="left-panel">
-            <h1>Text-Image retrieval</h1>
+            <h1>Text-Image Retrieval</h1>
             <form id="myForm" onsubmit="handleSubmit(event)">
                 <div class="form-group">
                     <label for="query">Query:</label>
                     <textarea id="query" name="query" required></textarea>
                 </div>
-                
                 <div class="form-group">
                     <label for="k" id="range_value">k = 1</label>
                     <input type="range" id="k" name="k" min="1" max="50" value="1">
                 </div>
-                
+                <div class="form-group">
+                    <label for="models">Models:</label>
+                    <div id="models">
+                        {% for model in models %}
+                            <div>
+                                <input type="checkbox" id="model_{{ loop.index }}" name="model_name" value="{{ model }}">
+                                <label for="model_{{ loop.index }}">{{ model }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
                 <button type="submit">Submit</button>
             </form>
         </div>
@@ -51,9 +58,8 @@
         </div>
     </div>
     <script>
-        // Cập nhật giá trị của range khi người dùng thay đổi
         document.getElementById('k').addEventListener('input', function() {
-            document.getElementById('range_value').textContent = "k = "+this.value;
+            document.getElementById('range_value').textContent = "k = " + this.value;
         });
     </script>
 </body>
