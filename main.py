@@ -32,15 +32,15 @@ model_siglip, _, preprocess_siglip = open_clip.create_model_and_transforms(
 
 # Khởi tạo faiss và id2imgfile tương ứng cho từng mô hình
 faiss_indices = {
-    'jinaai/jina-clip-v1': faiss.read_index("faiss_normal_jina.bin"),
-    'xlm-roberta-large-ViT-H-14': faiss.read_index("faiss_xml_ViT.bin"),
-    'ViT-SO400M-14-SigLIP-384': faiss.read_index("faiss_ViT_SigLIP.bin")
+    'jinaai/jina-clip-v1': faiss.read_index("dict/faiss_normal_jina.bin"),
+    'xlm-roberta-large-ViT-H-14': faiss.read_index("dict/faiss_xml_ViT.bin"),
+    'ViT-SO400M-14-SigLIP-384': faiss.read_index("dict/faiss_ViT_SigLIP.bin")
 }
 
 id2imgfiles = {
-    'jinaai/jina-clip-v1': json.load(open('id2imgfile_jina.json')),
-    'xlm-roberta-large-ViT-H-14': json.load(open('id2imgfaiss_xml_ViT.json')),
-    'ViT-SO400M-14-SigLIP-384': json.load(open('id2imgfaiss_ViT_SigLIP.json'))
+    'jinaai/jina-clip-v1': json.load(open('dict/id2imgfile_jina.json')),
+    'xlm-roberta-large-ViT-H-14': json.load(open('dict/id2imgfaiss_xml_ViT.json')),
+    'ViT-SO400M-14-SigLIP-384': json.load(open('dict/id2imgfaiss_ViT_SigLIP.json'))
 }
 
 # Điều chỉnh đường dẫn trong id2imgfiles để chỉ lấy hai thành phần cuối
@@ -66,7 +66,6 @@ async def display_images(query: str = Form(...), k: int = Form(...), model_names
         id2imgfile = id2imgfiles[model_name]
         if model_name == 'jinaai/jina-clip-v1':
             text_embedding = model_jina.encode_text(query)
-            text_embedding = text_embedding
         else:
             model = model_xlm if model_name == 'xlm-roberta-large-ViT-H-14' else model_siglip
             tokenizer = open_clip.get_tokenizer(model_name)
