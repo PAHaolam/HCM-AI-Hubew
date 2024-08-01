@@ -67,8 +67,7 @@ async def display_images(query: str = Form(...), k: int = Form(...), model_names
             text_tokens = tokenizer([query])
             with torch.no_grad():
                 text_embedding = model.encode_text(text_tokens)
-                
-                
+
         text_embedding = text_embedding.reshape((1, -1))
         _, indices = idx.search(text_embedding, k)
         
@@ -89,8 +88,7 @@ async def display_images(query: str = Form(...), k: int = Form(...), model_names
     img_htmls = []
     for tier, images in tiered_images.items():
         if images:
-            if len(model_names) > 1:
-                img_htmls.append(f"<h2>{tier}</h2>")
+            img_htmls.append(f"<div class='tier'><h2>{tier}</h2>")
             for file_name in images:
                 full_path = os.path.join("C:\\Users\\ADMIN\\Documents\\HCM-AI-2024\\HCM-AI-Hubew", IMAGE_FOLDER, file_name.replace('/', os.sep))
                 image = Image.open(full_path)
@@ -98,11 +96,12 @@ async def display_images(query: str = Form(...), k: int = Form(...), model_names
                 image.save(buffered, format="WEBP")
                 img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
                 img_html = f'''
-                <div>
+                <div class="image">
                     <p>{file_name}</p>
                     <img src="data:image/webp;base64,{img_str}" alt="Image" />
                 </div>
                 '''
                 img_htmls.append(img_html)
+            img_htmls.append("</div>")  # Kết thúc thẻ <div> của tier
 
     return JSONResponse(content={"image_data": "".join(img_htmls)})

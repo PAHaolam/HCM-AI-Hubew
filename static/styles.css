@@ -65,18 +65,32 @@ button:hover {
 }
 
 #result {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
     width: 100%;
 }
 
-#result img {
+.tier {
     width: 100%;
+    margin-bottom: 20px;
+}
+
+.tier h2 {
+    margin: 10px 0; /* Điều chỉnh khoảng cách trên và dưới */
+}
+
+.image {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.image img {
+    max-width: 200px;
     height: auto;
+    display: block;
+    margin: 5px 0; /* Điều chỉnh khoảng cách trên và dưới của ảnh */
 }
 
-.form-group {
-    width: 100%;
-    margin-bottom: 20px; /* Adjust this value to increase/decrease the spacing between pairs */
+.image p {
+    margin: 5px 0; /* Điều chỉnh khoảng cách trên và dưới của tên ảnh */
 }
