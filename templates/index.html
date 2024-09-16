@@ -3,82 +3,111 @@
 <head>
     <title>FastAPI Image Display</title>
     <link rel="stylesheet" href="/static/styles.css">
-    <script>
-        async function handleSubmit(event) {
-            event.preventDefault();
-
-            // Hiển thị hiệu ứng loading và thêm nội dung vào <p>
-            const loadingDiv = document.getElementById('loading');
-            loadingDiv.innerHTML = ''; // Làm sạch phần tử <p> nếu có khỏi loadingDiv
-            const loadingText = document.createElement('p');
-            loadingText.textContent = 'Loading...';
-            loadingDiv.appendChild(loadingText);
-            loadingDiv.style.display = 'block';
-            document.getElementById('result').style.display = 'none';
-
-            
-            const queryValue = document.getElementById('query').value;
-            const rangeValue = document.getElementById('k').value;
-            const modelNames = Array.from(document.querySelectorAll('input[name="model_name"]:checked')).map(el => el.value);
-
-            const formData = new FormData();
-            formData.append('query', queryValue);
-            formData.append('k', rangeValue);
-            modelNames.forEach(name => formData.append('model_names', name));
-
-            const response = await fetch('/display_images', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            // Xóa nội dung của <p> và ẩn hiệu ứng loading
-            loadingDiv.innerHTML = ''; // Xóa phần tử <p> khỏi loadingDiv
-            loadingDiv.style.display = 'none';
-            if (!result || !result.image_data) {
-                loadingText.textContent = 'Please select models';
-                loadingDiv.appendChild(loadingText);
-                loadingDiv.style.display = 'block';
-            } else {
-                document.getElementById('result').innerHTML = result.image_data;
-                document.getElementById('result').style.display = 'grid';
-            }
-        }
-    </script>
 </head>
 <body>
     <div class="container">
-        <div class="left-panel">
-            <h1>Text-Image Retrieval</h1>
+        <div class="split left-panel">
+            <h1>Text-Image retrieval</h1>
             <form id="myForm" onsubmit="handleSubmit(event)">
                 <div class="form-group">
                     <label for="query">Query:</label>
-                    <textarea id="query" name="query" required></textarea>
+                    <textarea id="query" name="query"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="submittedimage">Image:</label>
+                    <input type="file" id="submittedimage" name="submittedimage" accept="image/png, image/jpeg, image/jpg" />
+                </div>
+                <div class="form-group">
+                    <div id="uploaded_image"></div>
                 </div>
                 <div class="form-group">
                     <label for="k" id="range_value">k = 1</label>
                     <input type="range" id="k" name="k" min="1" max="50" value="1">
                 </div>
                 <div class="form-group">
-                    <label for="models">Models:</label>
-                    <div id="models">
-                        {% for model in models %}
-                            <div class="selectedModels">
-                                <input type="checkbox" id="model_{{ loop.index }}" name="model_name" value="{{ model }}">
-                                <span>{{ model }}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
+                    <button type="submit">Submit</button>
                 </div>
-                <button type="submit">Submit</button>
             </form>
         </div>
-        <div class="right-panel">
-            <div id="loading" class="loading"></div>
+        <div class="split right-panel">
             <div id="result"></div>
         </div>
     </div>
     <script>
+        var currentTypeSearch = "query";
+
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData();
+
+            if(currentTypeSearch=="query"){
+                const queryValue = document.getElementById('query').value;
+                const rangeValue = document.getElementById('k').value;
+                if(queryValue == ""){
+                    return;
+                }
+                formData.append('query', queryValue);
+                formData.append('k', rangeValue);
+                const response = await fetch('/display_images', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                document.getElementById('result').innerHTML = result.image_data;
+                document.getElementById('result').style.display = 'grid';
+            } else {
+                const imageValue = document.getElementById('submittedimage').files[0];
+                const rangeValue = document.getElementById('k').value;
+                formData.append('image', imageValue);
+                formData.append('k', rangeValue);
+                const response = await fetch('/display_images2', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                document.getElementById('result').innerHTML = result.image_data;
+                document.getElementById('result').style.display = 'grid';
+            }
+        }
+
+
+        async function displaySubmittedImg(){
+            console.log("run");
+            const fileInput = this.files[0];
+
+            if (fileInput) {
+                currentTypeSearch = "image"
+                const formData = new FormData();
+                formData.append('file', fileInput);  // Append the image to the form data
+
+                try {
+                    const response = await fetch('/uploadfile/', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        // Append the img to the div
+                        const uploadedImageDiv = document.getElementById('uploaded_image');
+                        uploadedImageDiv.innerHTML = result.image_data;
+                    } else {
+                        alert('Error uploading image');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        }
+        
+        document.getElementById('submittedimage').addEventListener('change', displaySubmittedImg)
+
+        document.getElementById('query').addEventListener('change', () => {
+            currentTypeSearch = "query"
+        })
+
+        
         document.getElementById('k').addEventListener('input', function() {
             document.getElementById('range_value').textContent = "k = " + this.value;
         });
