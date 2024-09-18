@@ -14,12 +14,14 @@ from translate import translate_vietnamese_to_english
 
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
 
-# Cung cấp tệp tĩnh từ thư mục "static"
+# Mount static folder
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-IMAGE_FOLDER = r"G:\.shortcut-targets-by-id\1StdpWNNHw_g3qHkaedeDXNHgz9GzrJ1L\AIC2024_Hubew\Keyframes_TransNetV2"
+# Setup Jinja2Templates
+templates = Jinja2Templates(directory="templates")
+
+IMAGE_FOLDER = r"D:\TransNetV2\keyframes"
 
 
 # Tải các mô hình sẵn có
@@ -37,12 +39,18 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-def path2html(indices):
+@app.get("/video-detail", response_class=HTMLResponse)
+async def video_detail(request: Request):
+    return templates.TemplateResponse("video-detail.html", {"request": request})
+
+
+def path2html(distances, indices, clickable = True):
     retrieved_images = []
-    for i in indices[0]:
+    for i, d in zip(indices[0], distances[0]):
         retrieved_image_path = id2imgfiles[f'{i}']
         retrieved_images.append({'path': retrieved_image_path, 
-                                 'idx': i})
+                                 'idx': i,
+                                 'distance': round(d, 3) if type(d)=='float' else d})
 
     img_htmls = []
     for retrived_image in retrieved_images:
@@ -54,11 +62,21 @@ def path2html(indices):
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        address_btn = f'''<a href="/video-detail/{full_path[-17:-9]}/{retrived_image['idx']}">View more</a>'''
         img_html = f'''
-        <div onclick="enlargeImage(this)">
-            <!-- id: {retrived_image['idx']:06} -->
-            <p>{full_path[-17:]}</p>
-            <img src="data:image/jpeg;base64,{img_str}" alt="Image"/>
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-5">
+            <!-- idx: {retrived_image['idx']} -->
+            <figure class="effect-ming tm-video-item">
+                <img src="data:image/jpeg;base64,{img_str}" alt="Image" class="img-fluid">
+                <figcaption class="d-flex align-items-center justify-content-center">
+                    <h2>{full_path[-8:-4]}</h2>
+                    {address_btn if clickable else ''}
+                </figcaption>                    
+            </figure>
+            <div class="d-flex justify-content-between tm-text-gray">
+                <span class="tm-text-gray-light">Distance={retrived_image['distance']}</span>
+                <span>{full_path[-17:-9]}</span>
+            </div>
         </div>
         '''
         img_htmls.append(img_html)
@@ -66,14 +84,14 @@ def path2html(indices):
 
 
 @app.post("/display_images")
-async def display_images(query: str = Form(...), k: int = Form(...)):
-    query = translate_vietnamese_to_english(query)
+async def display_images(query: str = Form(...)):
+    # query = translate_vietnamese_to_english(query)
 
     text_embedding = model_jina.encode_text(query)
     text_embedding = text_embedding.reshape((1, -1))
-    _, indices = jina_faiss_indices.search(text_embedding, k)
+    distances, indices = jina_faiss_indices.search(text_embedding, 20)
 
-    img_htmls = path2html(indices)
+    img_htmls = path2html(distances, indices)
 
     return JSONResponse(content={"image_data": "".join(img_htmls)})
 
@@ -85,9 +103,9 @@ async def display_images(image: UploadFile = File(...), k: int = Form(...)):
 
     img_embedding = model_jina.encode_image(image)
     img_embedding = img_embedding.reshape((1, -1))
-    _, indices = jina_faiss_indices.search(img_embedding, k)
+    distances, indices = jina_faiss_indices.search(img_embedding, k)
 
-    img_htmls = path2html(indices)
+    img_htmls = path2html(distances, indices)
 
     return JSONResponse(content={"image_data": "".join(img_htmls)})
 
@@ -101,3 +119,44 @@ async def create_upload_file(file: UploadFile):
     <img src="data:image/jpeg;base64,{img_str}" alt="Image"/>
     '''
     return JSONResponse(content={"image_data": img_html})
+
+
+@app.post("/nearest_images")
+async def nearest_images(idx: str = Form(...)):
+    idx = int(idx)
+    indices = [[]]
+    for i in range(-10, 11):
+        indices[0].append(idx+i)
+    
+    img_htmls = path2html(indices)
+
+    return JSONResponse(content={"image_data": "".join(img_htmls)})
+
+
+@app.get("/video-detail", response_class=HTMLResponse)
+async def video_detail(request: Request):
+    return templates.TemplateResponse("video-detail.html", {"request": request})
+
+
+@app.get("/video-detail/{id_video}/{idx}", response_class=HTMLResponse)
+async def video_detail(request: Request, id_video: str, idx:str):
+    idx = int(idx)
+    indices = [[]]
+    distances = [[]]
+    for i in range(-4, 5):
+        if i==0:
+            continue
+        indices[0].append(idx+i)
+        distances[0].append(i)
+    img_htmls = path2html(distances, indices, False)
+
+    with open(f'media-info/{id_video}.json', 'r', encoding='utf-8') as f:
+        data = json.loads(f.read().replace('►', ''))
+
+    data['watch_url'] = data['watch_url'].replace("watch?v=", "embed/")
+    print(data['watch_url'])
+
+    return templates.TemplateResponse("video-detail.html", {"request": request,
+                                                            "image_data": ''.join(img_htmls),
+                                                            "video_url": data['watch_url']})
+

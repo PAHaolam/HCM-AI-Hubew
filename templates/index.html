@@ -1,115 +1,148 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FastAPI Image Display</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalog-Z Bootstrap 5.0 HTML Template</title>
+    <link href="{{ url_for('static', path='/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/fontawesome/css/all.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/templatemo-style.css') }}" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="split left-panel">
-            <h1>Text-Image retrieval</h1>
-            <form id="myForm" onsubmit="handleSubmit(event)">
-                <div class="form-group">
-                    <label for="query">Query:</label>
-                    <textarea id="query" name="query"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="submittedimage">Image:</label>
-                    <input type="file" id="submittedimage" name="submittedimage" accept="image/png, image/jpeg, image/jpg" />
-                </div>
-                <div class="form-group">
-                    <div id="uploaded_image"></div>
-                </div>
-                <div class="form-group">
-                    <label for="k" id="range_value">k = 1</label>
-                    <input type="range" id="k" name="k" min="1" max="50" value="1">
-                </div>
-                <div class="form-group">
-                    <button type="submit">Submit</button>
-                </div>
-            </form>
+    <!-- Page Loader -->
+    <!-- <div id="loader-wrapper">
+        <div id="loader"></div>
+
+        <div class="loader-section section-left"></div>
+        <div class="loader-section section-right"></div>
+
+    </div> -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                AIO_Hubew
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-1 active" aria-current="page" href="index.html">Single scence</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-3" href="#">Multi scences</a>
+                </li>
+            </ul>
+            </div>
         </div>
-        <div class="split right-panel">
-            <div id="result"></div>
-        </div>
+    </nav>
+
+    <div class="tm-hero d-flex justify-content-center align-items-center" data-parallax="scroll" data-image-src="{{ url_for('static', path='/img/hero.jpg') }}">
+        <form class="d-flex tm-search-form" onsubmit="handleSubmit(event)">
+            <input class="form-control tm-search-input" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success tm-search-btn" type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
     </div>
+
+    <div class="container-fluid tm-container-content tm-mt-60">
+        <div class="row mb-4">
+            <h2 class="tm-text-primary" id="name-competition">
+                Text-Image retrieval
+            </h2>
+            <h2 class="col-6 tm-text-primary" style="display: none">
+                Retrieved Frames
+            </h2>
+        </div>
+        <div class="row tm-mb-90 tm-gallery">
+        </div> <!-- row -->
+    </div> <!-- container-fluid, tm-container-content -->
+    <footer class="tm-bg-gray pt-5 pb-3 tm-text-gray tm-footer">
+        <div class="container-fluid tm-container-small">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 col-12 px-5 mb-5">
+                    <h3 class="tm-text-primary mb-4 tm-footer-title">About AIO_Hubew</h3>
+                    <p>Nhóm 4 sinh viên năm 3 Trường Đại học Công nghệ Thông tin - Đại học Quốc gia TP.HCM</p>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12 px-5 mb-5">
+                    <h3 class="tm-text-primary mb-4 tm-footer-title">Our Links</h3>
+                    <ul class="tm-footer-links pl-0">
+                        <li><a href="https://www.facebook.com/UIT.Fanpage">Our University</a></li>
+                        <li><a href="https://www.facebook.com/tnghia.zzz">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12 px-5 mb-5">
+                    <ul class="tm-social-links d-flex justify-content-end pl-0 mb-5">
+                        <li class="mb-2"><a href="https://facebook.com"><i class="fab fa-facebook"></i></a></li>
+                        <li class="mb-2"><a href="https://twitter.com"><i class="fab fa-twitter"></i></a></li>
+                        <li class="mb-2"><a href="https://instagram.com"><i class="fab fa-instagram"></i></a></li>
+                        <li class="mb-2"><a href="https://github.com"><i class="fab fa-github"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
     <script>
         var currentTypeSearch = "query";
 
 
         async function handleSubmit(event) {
             event.preventDefault();
+            document.querySelector('.col-6').style.display = 'none';
+            document.querySelector('.tm-gallery').style.display = 'none';
+            document.getElementById('name-competition').style.display = 'none';
             const formData = new FormData();
 
             if(currentTypeSearch=="query"){
-                const queryValue = document.getElementById('query').value;
-                const rangeValue = document.getElementById('k').value;
+                const queryValue = document.querySelector('.tm-search-input').value;
                 if(queryValue == ""){
                     return;
                 }
                 formData.append('query', queryValue);
-                formData.append('k', rangeValue);
                 const response = await fetch('/display_images', {
                     method: 'POST',
                     body: formData
                 });
                 const result = await response.json();
-                document.getElementById('result').innerHTML = result.image_data;
-                document.getElementById('result').style.display = 'grid';
+                document.querySelector('.col-6').style.display = 'flex'
+                document.querySelector('.tm-gallery').innerHTML = result.image_data;
+                document.querySelector('.tm-gallery').style.display = 'flex';
             } else {
-                const imageValue = document.getElementById('submittedimage').files[0];
-                const rangeValue = document.getElementById('k').value;
-                formData.append('image', imageValue);
-                formData.append('k', rangeValue);
-                const response = await fetch('/display_images2', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                document.getElementById('result').innerHTML = result.image_data;
-                document.getElementById('result').style.display = 'grid';
+                return
+                // Uploading image query feature (coming soon)
+                // const imageValue = document.getElementById('submittedimage').files[0];
+                // const rangeValue = document.getElementById('k').value;
+                // formData.append('image', imageValue);
+                // formData.append('k', rangeValue);
+                // const response = await fetch('/display_images2', {
+                //     method: 'POST',
+                //     body: formData
+                // });
+                // const result = await response.json();
+                // document.getElementById('result').innerHTML = result.image_data;
+                // document.getElementById('result').style.display = 'grid';
             }
         }
 
 
-        async function displaySubmittedImg(){
-            console.log("run");
-            const fileInput = this.files[0];
+        //Hiển thị ảnh nền ở thanh tìm kiếm
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroSection = document.querySelector('.tm-hero');
+            const imageUrl = heroSection.getAttribute('data-image-src');
 
-            if (fileInput) {
-                currentTypeSearch = "image"
-                const formData = new FormData();
-                formData.append('file', fileInput);  // Append the image to the form data
-
-                try {
-                    const response = await fetch('/uploadfile/', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        // Append the img to the div
-                        const uploadedImageDiv = document.getElementById('uploaded_image');
-                        uploadedImageDiv.innerHTML = result.image_data;
-                    } else {
-                        alert('Error uploading image');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
+            if (imageUrl) {
+                heroSection.style.backgroundImage = `url(${imageUrl})`;
+                heroSection.style.backgroundSize = 'cover';
+                heroSection.style.backgroundPosition = 'center';
             }
-        }
-        
-        document.getElementById('submittedimage').addEventListener('change', displaySubmittedImg)
-
-        document.getElementById('query').addEventListener('change', () => {
-            currentTypeSearch = "query"
-        })
-
-        
-        document.getElementById('k').addEventListener('input', function() {
-            document.getElementById('range_value').textContent = "k = " + this.value;
+        });
+    </script>
+    <script>
+        $(window).on("load", function() {
+            $('body').addClass('loaded');
         });
     </script>
 </body>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catalog-Z Video Detail Page</title>
+    <link href="{{ url_for('static', path='/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/fontawesome/css/all.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/templatemo-style.css') }}" rel="stylesheet">
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                AIO_Hubew
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link nav-link-1 active" aria-current="page" href="index.html">Single scence</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link nav-link-3" href="#">Multi scences</a>
+                </li>
+            </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="tm-hero d-flex justify-content-center align-items-center" data-parallax="scroll" data-image-src="{{ url_for('static', path='/img/hero.jpg') }}"></div>
+
+    <div class="container-fluid tm-container-content tm-mt-60">
+        <div class="row mb-4">
+            <h2 class="col-12 tm-text-primary">Video for selected frame</h2>
+        </div>
+        <div class="row tm-mb-90">            
+            <div class="col-xl-8 col-lg-7 col-md-6 col-sm-12">
+                <iframe width="100%" height="75%"
+                    src="{{ video_url | safe }}"
+                    frameborder="0"
+                    allow="autoplay; encrypted-media; loop"
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div class="col-xl-4 col-lg-5 col-md-6 col-sm-12">
+                <div class="tm-bg-gray tm-video-details">
+                    <p class="mb-4">
+                        Aliquam varius posuere nunc, nec imperdiet neque condimentum at. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Please support us by contributing <a href="https://paypal.me/templatemo" target="_parent" rel="sponsored">a small donation</a> via PayPal.
+                    </p>
+                    <div class="text-center mb-5">
+                        <a href="#" class="btn btn-primary tm-btn-big">Download CSV</a>
+                    </div>                    
+                    <div class="mb-4 d-flex flex-wrap">
+                        <div class="mr-4 mb-2">
+                            <span class="tm-text-gray-dark">Resolution: </span><span class="tm-text-primary">1920x1080</span>
+                        </div>
+                        <div class="mr-4 mb-2">
+                            <span class="tm-text-gray-dark">Format: </span><span class="tm-text-primary">MP4</span>
+                        </div>
+                        <div>
+                            <span class="tm-text-gray-dark">Duration: </span><span class="tm-text-primary">00:00:20</span>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="tm-text-gray-dark mb-3">License</h3>
+                        <p>Free for both personal and commercial use. No need to pay anything. No need to make any attribution.</p>
+                    </div>
+                    <div>
+                        <h3 class="tm-text-gray-dark mb-3">Tags</h3>
+                        <a href="#" class="tm-text-primary mr-4 mb-2 d-inline-block">Cloud</a>
+                        <a href="#" class="tm-text-primary mr-4 mb-2 d-inline-block">Bluesky</a>
+                        <a href="#" class="tm-text-primary mr-4 mb-2 d-inline-block">Nature</a>
+                        <a href="#" class="tm-text-primary mr-4 mb-2 d-inline-block">Background</a>
+                        <a href="#" class="tm-text-primary mr-4 mb-2 d-inline-block">Timelapse</a>
+                        <a href="#" class="tm-text-primary mr-4 mb-2 d-inline-block">Night</a>
+                        <a href="#" class="tm-text-primary mr-4 mb-2 d-inline-block">Real Estate</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <h2 class="col-12 tm-text-primary">
+                Nearest frames
+            </h2>
+        </div>
+        <div class="row mb-3 tm-gallery">
+            {{ image_data | safe }}    
+        </div> <!-- row -->
+    </div> <!-- container-fluid, tm-container-content -->
+
+    <footer class="tm-bg-gray pt-5 pb-3 tm-text-gray tm-footer">
+        <div class="container-fluid tm-container-small">
+            <div class="row">
+                <div class="col-lg-6 col-md-12 col-12 px-5 mb-5">
+                    <h3 class="tm-text-primary mb-4 tm-footer-title">About AIO_Hubew</h3>
+                    <p>Nhóm 4 sinh viên năm 3 Trường Đại học Công nghệ Thông tin - Đại học Quốc gia TP.HCM</p>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12 px-5 mb-5">
+                    <h3 class="tm-text-primary mb-4 tm-footer-title">Our Links</h3>
+                    <ul class="tm-footer-links pl-0">
+                        <li><a href="https://www.facebook.com/UIT.Fanpage">Our University</a></li>
+                        <li><a href="https://www.facebook.com/tnghia.zzz">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-6 col-12 px-5 mb-5">
+                    <ul class="tm-social-links d-flex justify-content-end pl-0 mb-5">
+                        <li class="mb-2"><a href="https://facebook.com"><i class="fab fa-facebook"></i></a></li>
+                        <li class="mb-2"><a href="https://twitter.com"><i class="fab fa-twitter"></i></a></li>
+                        <li class="mb-2"><a href="https://instagram.com"><i class="fab fa-instagram"></i></a></li>
+                        <li class="mb-2"><a href="https://github.com"><i class="fab fa-github"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroSection = document.querySelector('.tm-hero');
+            const imageUrl = heroSection.getAttribute('data-image-src');
+
+            if (imageUrl) {
+                heroSection.style.backgroundImage = `url(${imageUrl})`;
+                heroSection.style.backgroundSize = 'cover';
+                heroSection.style.backgroundPosition = 'center';
+            }
+        });
+    </script>
+    <script>
+        $(window).on("load", function() {
+            $('body').addClass('loaded');
+        });
+    </script>
+</body>
+</html>
