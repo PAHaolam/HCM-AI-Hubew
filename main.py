@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 import io
@@ -12,7 +12,9 @@ import torch
 from transformers import AutoModel
 from translate import translate_vietnamese_to_english
 
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
+nothing = 0
 app = FastAPI()
 
 # Mount static folder
@@ -21,7 +23,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Setup Jinja2Templates
 templates = Jinja2Templates(directory="templates")
 
-IMAGE_FOLDER = r"D:\TransNetV2\keyframes"
+IMAGE_FOLDER = r"C:\1_htN\UIT\AIC2024\testMyCode\keyframes"
 
 
 # Tải các mô hình sẵn có
@@ -29,9 +31,9 @@ model_jina = AutoModel.from_pretrained('jinaai/jina-clip-v1', trust_remote_code=
 
 # Khởi tạo faiss và id2imgfile tương ứng cho từng mô hình
 # file bin: https://drive.google.com/file/d/13UEWcvYTtyT_7hdHwX6grSDCycmJg4va/view?usp=drive_link
-jina_faiss_indices = faiss.read_index(r"D:\TransNetV2\jina_index\jina_indices.bin")
-# file json: https://drive.google.com/file/d/1-mniCTAX1DrXwOCdnfsx1YXYnlMo6RJk/view?usp=drive_link
-id2imgfiles = json.load(open(r"D:\TransNetV2\image_paths\image_paths.json"))
+jina_faiss_indices = faiss.read_index(r"C:\1_htN\UIT\AIC2024\testMyCode\jina_index\jina_indices.bin")
+# file json: https://drive.google.com/file/d/1-mniCTAX1DrXwOCdnfsx1YXYXYnlMo6RJk/view?usp=drive_link
+id2imgfiles = json.load(open(r"C:\1_htN\UIT\AIC2024\testMyCode\image_path\image_paths.json"))
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -139,14 +141,14 @@ async def video_detail(request: Request):
 
 
 @app.get("/video-detail/{id_video}/{idx}", response_class=HTMLResponse)
-async def video_detail(request: Request, id_video: str, idx:str):
+async def video_detail(request: Request, id_video: str, idx: str):
     idx = int(idx)
     indices = [[]]
     distances = [[]]
     for i in range(-4, 5):
-        if i==0:
+        if i == 0:
             continue
-        indices[0].append(idx+i)
+        indices[0].append(idx + i)
         distances[0].append(i)
     img_htmls = path2html(distances, indices, False)
 
@@ -156,7 +158,39 @@ async def video_detail(request: Request, id_video: str, idx:str):
     data['watch_url'] = data['watch_url'].replace("watch?v=", "embed/")
     print(data['watch_url'])
 
-    return templates.TemplateResponse("video-detail.html", {"request": request,
-                                                            "image_data": ''.join(img_htmls),
-                                                            "video_url": data['watch_url']})
+    return templates.TemplateResponse("video-detail.html", {
+        "request": request,
+        "image_data": ''.join(img_htmls),
+        "video_url": data['watch_url'],
+        "id_video": id_video,
+        "idx": idx
+    })
+
+
+@app.get("/download_csv/{id_video}/{idx}", response_class=StreamingResponse)
+# nothing
+async def download_csv(id_video: str, idx: str):
+    idx = int(idx)
+    indices = [[]]
+    distances = [[]]
+    for i in range(-40, 50, 10):
+        if i == 0:
+            continue
+        indices[0].append(idx + i)
+        distances[0].append(i)
+
+    # Prepare data for CSV
+    csv_data = []
+    csv_data.append([id_video, idx])
+    for i in indices[0]:
+        csv_data.append([id_video, i])
+
+    # Create CSV in memory
+    def iter_csv():
+        for row in csv_data:
+            yield ','.join(map(str, row)) + '\n'
+
+    response = StreamingResponse(iter_csv(), media_type="text/csv")
+    response.headers["Content-Disposition"] = f"attachment; filename={id_video}_{idx}_keyframes.csv"
+    return response
 
