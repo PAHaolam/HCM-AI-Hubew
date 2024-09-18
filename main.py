@@ -23,7 +23,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Setup Jinja2Templates
 templates = Jinja2Templates(directory="templates")
 
-IMAGE_FOLDER = r"C:\1_htN\UIT\AIC2024\testMyCode\keyframes"
+IMAGE_FOLDER = r"D:\TransNetV2\keyframes"
 
 
 # Tải các mô hình sẵn có
@@ -31,9 +31,9 @@ model_jina = AutoModel.from_pretrained('jinaai/jina-clip-v1', trust_remote_code=
 
 # Khởi tạo faiss và id2imgfile tương ứng cho từng mô hình
 # file bin: https://drive.google.com/file/d/13UEWcvYTtyT_7hdHwX6grSDCycmJg4va/view?usp=drive_link
-jina_faiss_indices = faiss.read_index(r"C:\1_htN\UIT\AIC2024\testMyCode\jina_index\jina_indices.bin")
+jina_faiss_indices = faiss.read_index(r"D:\TransNetV2\jina_index\jina_indices.bin")
 # file json: https://drive.google.com/file/d/1-mniCTAX1DrXwOCdnfsx1YXYXYnlMo6RJk/view?usp=drive_link
-id2imgfiles = json.load(open(r"C:\1_htN\UIT\AIC2024\testMyCode\image_path\image_paths.json"))
+id2imgfiles = json.load(open(r"D:\TransNetV2\image_paths\image_paths.json"))
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -52,7 +52,7 @@ def path2html(distances, indices, clickable = True):
         retrieved_image_path = id2imgfiles[f'{i}']
         retrieved_images.append({'path': retrieved_image_path, 
                                  'idx': i,
-                                 'distance': round(d, 3) if type(d)=='float' else d})
+                                 'distance': round(d, 3) if isinstance(d, float) else d})
 
     img_htmls = []
     for retrived_image in retrieved_images:
