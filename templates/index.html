@@ -56,8 +56,7 @@
                 Retrieved Frames
             </h2>
         </div>
-        <div class="row tm-mb-90 tm-gallery">
-        </div> <!-- row -->
+        <div class="row tm-mb-90 tm-gallery"></div> <!-- row -->
     </div> <!-- container-fluid, tm-container-content -->
     <footer class="tm-bg-gray pt-5 pb-3 tm-text-gray tm-footer">
         <div class="container-fluid tm-container-small">
@@ -92,7 +91,7 @@
         async function handleSubmit(event) {
             event.preventDefault();
             document.querySelector('.col-6').style.display = 'none';
-            document.querySelector('.tm-gallery').style.display = 'none';
+            document.querySelector('.tm-gallery').innerHTML = '<div id="loader"></div>';
             document.getElementById('name-competition').style.display = 'none';
             const formData = new FormData();
 
