@@ -52,7 +52,8 @@
                         Aliquam varius posuere nunc, nec imperdiet neque condimentum at. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Please support us by contributing <a href="https://paypal.me/templatemo" target="_parent" rel="sponsored">a small donation</a> via PayPal.
                     </p>
                     <div class="text-center mb-5">
-                        <a href="/download_csv/{{ id_video }}/{{ idx }}" class="btn btn-primary tm-btn-big">Download CSV</a>
+                        <input type="text" id="additional-number" class="form-control mb-3" placeholder="Enter a string (optional)">
+                        <button onclick="downloadCSV()" class="btn btn-primary tm-btn-big">Download CSV</button>
                     </div>                    
                     <div class="mb-4 d-flex flex-wrap">
                         <div class="mr-4 mb-2">
@@ -133,6 +134,18 @@
         $(window).on("load", function() {
             $('body').addClass('loaded');
         });
+    </script>
+    <script>
+        function downloadCSV() {
+            const additionalNumber = document.getElementById('additional-number').value;
+            const idVideo = "{{ id_video }}";
+            const idx = "{{ idx }}";
+            let url = `/download_csv/${idVideo}/${idx}`;
+            if (additionalNumber) {
+                url += `?additional_number=${additionalNumber}`;
+            }
+            window.location.href = url;
+        }
     </script>
 </body>
 </html>
