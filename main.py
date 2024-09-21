@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Form, File, UploadFile
+from fastapi import FastAPI, Request, Form, File, UploadFile, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -169,10 +169,8 @@ async def video_detail(request: Request, id_video: str, idx: str):
         "actual_idx": actual_index
     })
 
-
 @app.get("/download_csv/{id_video}/{actual_idx}", response_class=StreamingResponse)
-# nothing
-async def download_csv(id_video: str, actual_idx: str):
+async def download_csv(id_video: str, actual_idx: str, additional_number: str = Query(None)):
     actual_idx = int(actual_idx)
     indices = [[]]
     for i in range(-40, 50, 10):
@@ -182,9 +180,9 @@ async def download_csv(id_video: str, actual_idx: str):
 
     # Prepare data for CSV
     csv_data = []
-    csv_data.append([id_video, actual_idx])
+    csv_data.append([id_video, actual_idx, additional_number if additional_number is not None else ""])
     for i in indices[0]:
-        csv_data.append([id_video, i])
+        csv_data.append([id_video, i, additional_number if additional_number is not None else ""])
 
     # Create CSV in memory
     def iter_csv():
