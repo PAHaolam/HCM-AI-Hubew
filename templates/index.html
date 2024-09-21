@@ -22,6 +22,7 @@
             <a class="navbar-brand" href="#">
                 AIO_Hubew
             </a>
+            <input type="file" id="submittedimage" name="submittedimage" accept="image/png, image/jpeg, image/jpg" />
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
@@ -85,7 +86,12 @@
     </footer>
     
     <script>
-        var currentTypeSearch = "query";
+        //var currentTypeSearch = "query";
+
+        function checkImg(str) {
+            const regex = /^<.*\.(png|jpeg|jpg)>$/;
+            return regex.test(str);
+        }
 
 
         async function handleSubmit(event) {
@@ -95,11 +101,22 @@
             document.getElementById('name-competition').style.display = 'none';
             const formData = new FormData();
 
-            if(currentTypeSearch=="query"){
-                const queryValue = document.querySelector('.tm-search-input').value;
-                if(queryValue == ""){
-                    return;
-                }
+            const queryValue = document.querySelector('.tm-search-input').value;
+            if(queryValue == ""){
+                return;
+            }
+            if(checkImg(queryValue)){
+                const imageValue = document.getElementById('submittedimage').files[0];
+                formData.append('image', imageValue);
+                const response = await fetch('/display_images2', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                document.querySelector('.col-6').style.display = 'flex'
+                document.querySelector('.tm-gallery').innerHTML = result.image_data;
+                document.querySelector('.tm-gallery').style.display = 'flex';
+            } else {
                 formData.append('query', queryValue);
                 const response = await fetch('/display_images', {
                     method: 'POST',
@@ -109,8 +126,9 @@
                 document.querySelector('.col-6').style.display = 'flex'
                 document.querySelector('.tm-gallery').innerHTML = result.image_data;
                 document.querySelector('.tm-gallery').style.display = 'flex';
-            } else {
-                return
+            }
+            // } else {
+            //     return
                 // Uploading image query feature (coming soon)
                 // const imageValue = document.getElementById('submittedimage').files[0];
                 // const rangeValue = document.getElementById('k').value;
@@ -123,7 +141,7 @@
                 // const result = await response.json();
                 // document.getElementById('result').innerHTML = result.image_data;
                 // document.getElementById('result').style.display = 'grid';
-            }
+            //}
         }
 
 
@@ -138,6 +156,22 @@
                 heroSection.style.backgroundPosition = 'center';
             }
         });
+
+        async function submittedImg(){
+            //code here
+            const inputElement = document.getElementById('submittedimage');
+            const searchInput = document.querySelector('.tm-search-input');
+            
+            // Lấy file từ input
+            const file = inputElement.files[0];
+            
+            if (file) {
+                // Thay đổi nội dung của thẻ search input thành "img: name_img_file"
+                searchInput.value = `<${file.name}>`;
+            }
+        }
+
+        document.getElementById('submittedimage').addEventListener('change', submittedImg)
     </script>
     <script>
         $(window).on("load", function() {
