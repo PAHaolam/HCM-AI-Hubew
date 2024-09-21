@@ -24,6 +24,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 IMAGE_FOLDER = r"D:\TransNetV2\keyframes"
+extra_IMAGE_FOLDER = r"G:\.shortcut-targets-by-id\1StdpWNNHw_g3qHkaedeDXNHgz9GzrJ1L\AIC2024_Hubew\Keyframes_TransNetV2"
 
 
 # Tải các mô hình sẵn có
@@ -62,7 +63,8 @@ def path2html(distances, indices, clickable = True):
         try:
             image = Image.open(full_path)
         except:
-            image = Image.new('RGB', (1280, 720), (0, 0, 0))
+            #image = Image.new('RGB', (1280, 720), (0, 0, 0))
+            image = Image.open(os.path.join(extra_IMAGE_FOLDER, retrived_image['path']))
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
@@ -93,7 +95,7 @@ async def display_images(query: str = Form(...)):
 
     text_embedding = model_jina.encode_text(query)
     text_embedding = text_embedding.reshape((1, -1))
-    distances, indices = jina_faiss_indices.search(text_embedding, 20)
+    distances, indices = jina_faiss_indices.search(text_embedding, 28)
 
     img_htmls = path2html(distances, indices)
 
@@ -101,13 +103,13 @@ async def display_images(query: str = Form(...)):
 
 
 @app.post("/display_images2")
-async def display_images(image: UploadFile = File(...), k: int = Form(...)):
+async def display_images(image: UploadFile = File(...)):
     contents = await image.read()
     image = Image.open(io.BytesIO(contents))  # Open it as an image using PIL
 
     img_embedding = model_jina.encode_image(image)
     img_embedding = img_embedding.reshape((1, -1))
-    distances, indices = jina_faiss_indices.search(img_embedding, k)
+    distances, indices = jina_faiss_indices.search(img_embedding, 28)
 
     img_htmls = path2html(distances, indices)
 
