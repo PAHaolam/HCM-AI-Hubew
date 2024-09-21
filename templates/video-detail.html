@@ -139,7 +139,7 @@
         function downloadCSV() {
             const additionalNumber = document.getElementById('additional-number').value;
             const idVideo = "{{ id_video }}";
-            const idx = "{{ idx }}";
+            const idx = "{{ actual_idx }}";
             let url = `/download_csv/${idVideo}/${idx}`;
             if (additionalNumber) {
                 url += `?additional_number=${additionalNumber}`;
