@@ -35,6 +35,8 @@ jina_faiss_indices = faiss.read_index(r"D:\TransNetV2\jina_index\jina_indices.bi
 # file json: https://drive.google.com/file/d/1-mniCTAX1DrXwOCdnfsx1YXYXYnlMo6RJk/view?usp=drive_link
 id2imgfiles = json.load(open(r"D:\TransNetV2\image_paths\image_paths.json"))
 
+actual_indices = json.load(open(r"D:\TransNetV2\result_dict.json"))
+
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
@@ -65,13 +67,13 @@ def path2html(distances, indices, clickable = True):
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         address_btn = f'''<a href="/video-detail/{full_path[-17:-9]}/{retrived_image['idx']}">View more</a>'''
+        actual_index = actual_indices[full_path[-17:-9]][full_path[-8:-4]]
         img_html = f'''
         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-5">
-            <!-- idx: {retrived_image['idx']} -->
             <figure class="effect-ming tm-video-item">
                 <img src="data:image/jpeg;base64,{img_str}" alt="Image" class="img-fluid">
                 <figcaption class="d-flex align-items-center justify-content-center">
-                    <h2>{full_path[-8:-4]}</h2>
+                    <h2>{actual_index if actual_index >= 0 else 'NaN'}</h2>
                     {address_btn if clickable else ''}
                 </figcaption>                    
             </figure>
@@ -135,13 +137,11 @@ async def nearest_images(idx: str = Form(...)):
     return JSONResponse(content={"image_data": "".join(img_htmls)})
 
 
-@app.get("/video-detail", response_class=HTMLResponse)
-async def video_detail(request: Request):
-    return templates.TemplateResponse("video-detail.html", {"request": request})
-
-
 @app.get("/video-detail/{id_video}/{idx}", response_class=HTMLResponse)
 async def video_detail(request: Request, id_video: str, idx: str):
+    full_path = os.path.join(IMAGE_FOLDER, id2imgfiles[f'{idx}'])
+    actual_index = actual_indices[id_video][full_path[-8:-4]]
+
     idx = int(idx)
     indices = [[]]
     distances = [[]]
@@ -155,7 +155,7 @@ async def video_detail(request: Request, id_video: str, idx: str):
     with open(f'media-info/{id_video}.json', 'r', encoding='utf-8') as f:
         data = json.loads(f.read().replace('►', ''))
 
-    data['watch_url'] = data['watch_url'].replace("watch?v=", "embed/")
+    data['watch_url'] = f'{data["watch_url"].replace("watch?v=", "embed/")}?start={int(actual_index/25)}'
     print(data['watch_url'])
 
     return templates.TemplateResponse("video-detail.html", {
@@ -163,25 +163,24 @@ async def video_detail(request: Request, id_video: str, idx: str):
         "image_data": ''.join(img_htmls),
         "video_url": data['watch_url'],
         "id_video": id_video,
-        "idx": idx
+        "idx": idx,
+        "actual_idx": actual_index
     })
 
 
-@app.get("/download_csv/{id_video}/{idx}", response_class=StreamingResponse)
+@app.get("/download_csv/{id_video}/{actual_idx}", response_class=StreamingResponse)
 # nothing
-async def download_csv(id_video: str, idx: str):
-    idx = int(idx)
+async def download_csv(id_video: str, actual_idx: str):
+    actual_idx = int(actual_idx)
     indices = [[]]
-    distances = [[]]
     for i in range(-40, 50, 10):
         if i == 0:
             continue
-        indices[0].append(idx + i)
-        distances[0].append(i)
+        indices[0].append(actual_idx + i)
 
     # Prepare data for CSV
     csv_data = []
-    csv_data.append([id_video, idx])
+    csv_data.append([id_video, actual_idx])
     for i in indices[0]:
         csv_data.append([id_video, i])
 
@@ -191,6 +190,6 @@ async def download_csv(id_video: str, idx: str):
             yield ','.join(map(str, row)) + '\n'
 
     response = StreamingResponse(iter_csv(), media_type="text/csv")
-    response.headers["Content-Disposition"] = f"attachment; filename={id_video}_{idx}_keyframes.csv"
+    response.headers["Content-Disposition"] = f"attachment; filename={id_video}_{actual_idx}_keyframes.csv"
     return response
 
