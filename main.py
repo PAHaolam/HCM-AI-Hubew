@@ -8,11 +8,8 @@ import os
 import base64
 import faiss
 import json
-import torch
 from transformers import AutoModel
-from translate import translate_vietnamese_to_english
-
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
+import open_clip
 
 nothing = 0
 app = FastAPI()
@@ -23,20 +20,22 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # Setup Jinja2Templates
 templates = Jinja2Templates(directory="templates")
 
-IMAGE_FOLDER = r"D:\TransNetV2\keyframes"
-extra_IMAGE_FOLDER = r"G:\.shortcut-targets-by-id\1StdpWNNHw_g3qHkaedeDXNHgz9GzrJ1L\AIC2024_Hubew\Keyframes_TransNetV2"
-
+IMAGE_FOLDER = "/content/drive/MyDrive/AIC2024_Hubew/Keyframes_TransNetV2"
+INDEX_FILE = "/content/drive/MyDrive/AIC2024_Hubew/CS336/index/nllb-clip-large-siglip.bin" # Thư mục chứa các file bin
+JSON_FILE = "/content/drive/MyDrive/AIC2024_Hubew/CS336/json/image_paths.json" # Thưc mục chứa các file json
 
 # Tải các mô hình sẵn có
-model_jina = AutoModel.from_pretrained('jinaai/jina-clip-v1', trust_remote_code=True)
+#model_jina = AutoModel.from_pretrained('jinaai/jina-clip-v1', trust_remote_code=True)
+model, _, preprocess = open_clip.create_model_and_transforms(
+        'nllb-clip-large-siglip', pretrained='mrl'
+    )
+tokenizer = open_clip.get_tokenizer('nllb-clip-large-siglip')
 
 # Khởi tạo faiss và id2imgfile tương ứng cho từng mô hình
-# file bin: https://drive.google.com/file/d/13UEWcvYTtyT_7hdHwX6grSDCycmJg4va/view?usp=drive_link
-jina_faiss_indices = faiss.read_index(r"D:\TransNetV2\jina_index\jina_indices.bin")
-# file json: https://drive.google.com/file/d/1-mniCTAX1DrXwOCdnfsx1YXYXYnlMo6RJk/view?usp=drive_link
-id2imgfiles = json.load(open(r"D:\TransNetV2\image_paths\image_paths.json"))
+faiss_index = faiss.read_index(INDEX_FILE)
+id2imgfiles = json.load(open(JSON_FILE))
 
-actual_indices = json.load(open(r"D:\TransNetV2\result_dict.json"))
+#actual_indices = json.load(open(r"D:\TransNetV2\result_dict.json"))
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -69,7 +68,7 @@ def path2html(distances, indices, clickable = True):
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         address_btn = f'''<a href="/video-detail/{full_path[-17:-9]}/{retrived_image['idx']}">View more</a>'''
-        actual_index = actual_indices[full_path[-17:-9]][full_path[-8:-4]]
+        actual_index = 0#actual_indices[full_path[-17:-9]][full_path[-8:-4]]
         img_html = f'''
         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-5">
             <figure class="effect-ming tm-video-item">
@@ -93,9 +92,11 @@ def path2html(distances, indices, clickable = True):
 async def display_images(query: str = Form(...)):
     # query = translate_vietnamese_to_english(query)
 
-    text_embedding = model_jina.encode_text(query)
+    text_tokens = tokenizer(query) # Move text_tokens to the same device as the model
+    text_embedding = model.encode_text(text_tokens) # Pass the tokenized text to the model
+    #text_embedding = model_jina.encode_text(query)
     text_embedding = text_embedding.reshape((1, -1))
-    distances, indices = jina_faiss_indices.search(text_embedding, 28)
+    distances, indices = faiss_index.search(text_embedding, 28)
 
     img_htmls = path2html(distances, indices)
 
@@ -107,9 +108,14 @@ async def display_images(image: UploadFile = File(...)):
     contents = await image.read()
     image = Image.open(io.BytesIO(contents))  # Open it as an image using PIL
 
-    img_embedding = model_jina.encode_image(image)
+    # Preprocess the image using the appropriate transform
+    image_tensor = preprocess(image).unsqueeze(0)
+
+    # Encode the image
+    img_embedding = model.encode_image(image_tensor)
+    #img_embedding = model_jina.encode_image(image)
     img_embedding = img_embedding.reshape((1, -1))
-    distances, indices = jina_faiss_indices.search(img_embedding, 28)
+    distances, indices = faiss_index.search(img_embedding, 28)
 
     img_htmls = path2html(distances, indices)
 
@@ -142,7 +148,7 @@ async def nearest_images(idx: str = Form(...)):
 @app.get("/video-detail/{id_video}/{idx}", response_class=HTMLResponse)
 async def video_detail(request: Request, id_video: str, idx: str):
     full_path = os.path.join(IMAGE_FOLDER, id2imgfiles[f'{idx}'])
-    actual_index = actual_indices[id_video][full_path[-8:-4]]
+    actual_index = 0#actual_indices[id_video][full_path[-8:-4]]
 
     idx = int(idx)
     indices = [[]]
