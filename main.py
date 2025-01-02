@@ -200,8 +200,8 @@ async def download_csv(id_video: str, actual_idx: str, additional_number: str = 
     response.headers["Content-Disposition"] = f"attachment; filename={id_video}_{actual_idx}_keyframes.csv"
     return response
 
-# from pyngrok import ngrok
+from pyngrok import ngrok
 
-# # Tạo public URL với ngrok
-# public_url = ngrok.connect(8000)
-# print("Public URL:", public_url)
+# Tạo public URL với ngrok
+public_url = ngrok.connect(8000)
+print("Public URL:", public_url)
