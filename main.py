@@ -63,8 +63,8 @@ def path2html(distances, indices, clickable = True):
         try:
             image = Image.open(full_path)
         except:
-            #image = Image.new('RGB', (1280, 720), (0, 0, 0))
-            image = Image.open(os.path.join(extra_IMAGE_FOLDER, retrived_image['path']))
+            image = Image.new('RGB', (1280, 720), (0, 0, 0))
+            #image = Image.open(os.path.join(extra_IMAGE_FOLDER, retrived_image['path']))
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
@@ -158,7 +158,6 @@ async def video_detail(request: Request, id_video: str, idx: str):
         data = json.loads(f.read().replace('►', ''))
 
     data['watch_url'] = f'{data["watch_url"].replace("watch?v=", "embed/")}?start={int(actual_index/25)}'
-    print(data['watch_url'])
 
     return templates.TemplateResponse("video-detail.html", {
         "request": request,

@@ -49,10 +49,11 @@
             <div class="col-xl-4 col-lg-5 col-md-6 col-sm-12">
                 <div class="tm-bg-gray tm-video-details">
                     <p class="mb-4">
-                        Aliquam varius posuere nunc, nec imperdiet neque condimentum at. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Please support us by contributing <a href="https://paypal.me/templatemo" target="_parent" rel="sponsored">a small donation</a> via PayPal.
+                        Nhập thời gian trong video để xuất ra idx frame và nhập câu trả lời cho câu hỏi qa, nhấn nút Download CSV để xuất file csv
                     </p>
                     <div class="text-center mb-5">
-                        <input type="text" id="additional-number" class="form-control mb-3" placeholder="Enter a string (optional)">
+                        <input type="text" id="additional-time" class="form-control mb-3" placeholder="MM:SS (optional)">
+                        <input type="text" id="additional-number" class="form-control mb-3" placeholder="answer (optional)">
                         <button onclick="downloadCSV()" class="btn btn-primary tm-btn-big">Download CSV</button>
                     </div>                    
                     <div class="mb-4 d-flex flex-wrap">
@@ -136,10 +137,34 @@
         });
     </script>
     <script>
+        function checkAndCalculateTime(input) {
+            // Sử dụng biểu thức chính quy để kiểm tra định dạng mm:ss
+            const regex = /^\d{2}:\d{2}$/;
+
+            if (regex.test(input)) {
+                // Tách phút và giây từ chuỗi input
+                const [minutes, seconds] = input.split(':').map(Number);
+                
+                // Nếu phút và giây nằm trong khoảng hợp lệ (0 <= phút < 60, 0 <= giây < 60)
+                if (minutes >= 0 && minutes < 60 && seconds >= 0 && seconds < 60) {
+                    // Tính tổng số giây và trả về (số giây * 25 + 10)
+                    const totalSeconds = minutes * 60 + seconds;
+                    return totalSeconds * 25 + 10;
+                }
+            }
+            
+            // Trả về 0 nếu không đúng định dạng hoặc giá trị không hợp lệ
+            return 0;
+        }
+
         function downloadCSV() {
             const additionalNumber = document.getElementById('additional-number').value;
+            const additionalTime = document.getElementById('additional-time').value;
             const idVideo = "{{ id_video }}";
-            const idx = "{{ actual_idx }}";
+            let idx = "{{ actual_idx }}";
+            if(additionalTime){
+                idx = checkAndCalculateTime(additionalTime)
+            }
             let url = `/download_csv/${idVideo}/${idx}`;
             if (additionalNumber) {
                 url += `?additional_number=${additionalNumber}`;
