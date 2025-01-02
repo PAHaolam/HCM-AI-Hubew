@@ -35,7 +35,7 @@ tokenizer = open_clip.get_tokenizer('nllb-clip-large-siglip')
 faiss_index = faiss.read_index(INDEX_FILE)
 id2imgfiles = json.load(open(JSON_FILE))
 
-#actual_indices = json.load(open(r"D:\TransNetV2\result_dict.json"))
+actual_indices = json.load(open("/content/drive/MyDrive/AIC2024_Hubew/CS336/actual_index/actual_index.json"))
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -70,7 +70,7 @@ def path2html(distances, indices, clickable = True):
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         address_btn = f'''<a href="/video-detail/{full_path[-17:-9]}/{retrived_image['idx']}">View more</a>'''
-        actual_index = 0#actual_indices[full_path[-17:-9]][full_path[-8:-4]]
+        actual_index = actual_indices[full_path[-17:-9]][full_path[-8:-4]]
         img_html = f'''
         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-5">
             <figure class="effect-ming tm-video-item">
@@ -148,7 +148,7 @@ async def nearest_images(idx: str = Form(...)):
 @app.get("/video-detail/{id_video}/{idx}", response_class=HTMLResponse)
 async def video_detail(request: Request, id_video: str, idx: str):
     full_path = os.path.join(IMAGE_FOLDER, id2imgfiles[f'{idx}'])
-    actual_index = 0#actual_indices[id_video][full_path[-8:-4]]
+    actual_index = actual_indices[id_video][full_path[-8:-4]]
 
     # idx = int(idx)
     # indices = [[]]
