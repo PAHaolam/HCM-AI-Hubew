@@ -150,15 +150,15 @@ async def video_detail(request: Request, id_video: str, idx: str):
     full_path = os.path.join(IMAGE_FOLDER, id2imgfiles[f'{idx}'])
     actual_index = 0#actual_indices[id_video][full_path[-8:-4]]
 
-    idx = int(idx)
-    indices = [[]]
-    distances = [[]]
-    for i in range(-4, 5):
-        if i == 0:
-            continue
-        indices[0].append(idx + i)
-        distances[0].append(i)
-    img_htmls = path2html(distances, indices, False)
+    # idx = int(idx)
+    # indices = [[]]
+    # distances = [[]]
+    # for i in range(-4, 5):
+    #     if i == 0:
+    #         continue
+    #     indices[0].append(idx + i)
+    #     distances[0].append(i)
+    # img_htmls = path2html(distances, indices, False)
 
     with open(f'media-info/{id_video}.json', 'r', encoding='utf-8') as f:
         data = json.loads(f.read().replace('►', ''))
@@ -167,7 +167,7 @@ async def video_detail(request: Request, id_video: str, idx: str):
 
     return templates.TemplateResponse("video-detail.html", {
         "request": request,
-        "image_data": ''.join(img_htmls),
+        # "image_data": ''.join(img_htmls),
         "video_url": data['watch_url'],
         "id_video": id_video,
         "idx": idx,
