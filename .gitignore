@@ -3,3 +3,5 @@
 
 # Thư mục cache Python
 __pycache__/
+
+venv/

@@ -1,13 +1,10 @@
-import json
+# Giả sử bạn đã load mô hình
+import open_clip
 
-id_video = "L05_V022"
-No = 638
+# Load model từ open_clip
+model_name = "nllb-clip-large-siglip"  # hoặc model bạn đang dùng
+pretrained = "mrl"  # Tên của mô hình pretrained (nếu có)
 
-actual_indices = json.load(open(r"D:\TransNetV2\result_dict.json"))
-actual_index = int(actual_indices[id_video][f'{No:04}'])
-
-print(actual_index)
-
-with open(f'media-info/{id_video}.json', 'r', encoding='utf-8') as f:
-    data = json.loads(f.read().replace('►', ''))
-print(f"{data['watch_url']}&t={int(actual_index/25)}")
+print("Loading model ...")
+# Load model và preprocess
+model, preprocess_train, preprocess_val = open_clip.create_model_and_transforms(model_name, pretrained=pretrained)
