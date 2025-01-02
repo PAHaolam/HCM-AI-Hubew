@@ -52,6 +52,8 @@ def path2html(distances, indices, clickable = True):
     retrieved_images = []
     for i, d in zip(indices[0], distances[0]):
         retrieved_image_path = id2imgfiles[f'{i}']
+        retrieved_image_path = "/".join(retrieved_image_path.split("/")[-2:])
+        retrieved_image_path = "keyframes_" + retrieved_image_path[:3] + "/" + retrieved_image_path
         retrieved_images.append({'path': retrieved_image_path, 
                                  'idx': i,
                                  'distance': round(d, 3) if isinstance(d, float) else d})
@@ -95,8 +97,7 @@ async def display_images(query: str = Form(...)):
     text_tokens = tokenizer(query) # Move text_tokens to the same device as the model
     text_embedding = model.encode_text(text_tokens) # Pass the tokenized text to the model
     #text_embedding = model_jina.encode_text(query)
-    text_embedding = text_embedding.reshape((1, -1))
-    distances, indices = faiss_index.search(text_embedding, 28)
+    distances, indices = faiss_index.search(text_embedding.detach().numpy(), 28)
 
     img_htmls = path2html(distances, indices)
 
@@ -114,8 +115,7 @@ async def display_images(image: UploadFile = File(...)):
     # Encode the image
     img_embedding = model.encode_image(image_tensor)
     #img_embedding = model_jina.encode_image(image)
-    img_embedding = img_embedding.reshape((1, -1))
-    distances, indices = faiss_index.search(img_embedding, 28)
+    distances, indices = faiss_index.search(img_embedding.detach().numpy(), 28)
 
     img_htmls = path2html(distances, indices)
 
@@ -198,3 +198,8 @@ async def download_csv(id_video: str, actual_idx: str, additional_number: str = 
     response.headers["Content-Disposition"] = f"attachment; filename={id_video}_{actual_idx}_keyframes.csv"
     return response
 
+# from pyngrok import ngrok
+
+# # Tạo public URL với ngrok
+# public_url = ngrok.connect(8000)
+# print("Public URL:", public_url)
