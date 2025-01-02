@@ -56,7 +56,7 @@ def path2html(distances, indices, clickable = True):
         retrieved_image_path = "keyframes_" + retrieved_image_path[:3] + "/" + retrieved_image_path
         retrieved_images.append({'path': retrieved_image_path, 
                                  'idx': i,
-                                 'distance': round(d, 3) if isinstance(d, float) else d})
+                                 'distance': f"{d:.3f}" if isinstance(d, float) else f"{d}"})
 
     img_htmls = []
     for retrived_image in retrieved_images:
