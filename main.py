@@ -172,7 +172,8 @@ async def video_detail(request: Request, id_video: str, idx: str):
         "video_url": data['watch_url'],
         "id_video": id_video,
         "idx": idx,
-        "actual_idx": actual_index
+        "actual_idx": actual_index,
+        "fps": fps
     })
 
 @app.get("/download_csv/{id_video}/{actual_idx}", response_class=StreamingResponse)

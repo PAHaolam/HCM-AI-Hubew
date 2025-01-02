@@ -129,7 +129,7 @@
         });
     </script>
     <script>
-        function checkAndCalculateTime(input) {
+        function checkAndCalculateTime(input, fps) {
             // Sử dụng biểu thức chính quy để kiểm tra định dạng mm:ss
             const regex = /^\d{2}:\d{2}$/;
 
@@ -141,7 +141,7 @@
                 if (minutes >= 0 && minutes < 60 && seconds >= 0 && seconds < 60) {
                     // Tính tổng số giây và trả về (số giây * 25 + 10)
                     const totalSeconds = minutes * 60 + seconds;
-                    return totalSeconds * 25 + 10;
+                    return totalSeconds * fps + 10;
                 }
             }
             
@@ -154,8 +154,9 @@
             const additionalTime = document.getElementById('additional-time').value;
             const idVideo = "{{ id_video }}";
             let idx = "{{ actual_idx }}";
+            const fps = "{{ fps }}";
             if(additionalTime){
-                idx = checkAndCalculateTime(additionalTime)
+                idx = checkAndCalculateTime(additionalTime, fps)
             }
             let url = `/download_csv/${idVideo}/${idx}`;
             if (additionalNumber) {
